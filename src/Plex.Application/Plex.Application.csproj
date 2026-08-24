@@ -1,0 +1,5 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <ItemGroup>
+    <ProjectReference Include="../Plex.Domain/Plex.Domain.csproj" />
+  </ItemGroup>
+</Project>
