@@ -1,0 +1,24 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.x
+      - name: Restore API
+        run: dotnet restore src/Plex.Api/Plex.Api.csproj
+      - name: Build API
+        run: dotnet build src/Plex.Api/Plex.Api.csproj -c Release --no-restore
+      - name: Restore Worker
+        run: dotnet restore src/Plex.Worker/Plex.Worker.csproj
+      - name: Build Worker
+        run: dotnet build src/Plex.Worker/Plex.Worker.csproj -c Release --no-restore
