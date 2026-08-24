@@ -1,0 +1,44 @@
+name: NuGet
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "src/Plex.Primitives/**"
+      - "tests/Plex.Primitives.Tests/**"
+      - ".github/workflows/nuget.yml"
+  workflow_dispatch:
+    inputs:
+      publish:
+        description: "Publish Plex.Primitives to NuGet.org"
+        required: true
+        default: false
+        type: boolean
+
+jobs:
+  test-and-pack:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: "10.0.x"
+
+      - name: Test
+        run: dotnet test tests/Plex.Primitives.Tests/Plex.Primitives.Tests.csproj --configuration Release
+
+      - name: Pack
+        run: dotnet pack src/Plex.Primitives/Plex.Primitives.csproj --configuration Release --no-restore
+
+      - name: Upload package artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: Plex.Primitives
+          path: artifacts/*.nupkg
+
+      - name: Publish to NuGet.org
+        if: ${{ github.event_name == 'workflow_dispatch' && inputs.publish }}
+        run: dotnet nuget push "artifacts/*.nupkg" --api-key "$NUGET_API_KEY" --source https://api.nuget.org/v3/index.json --skip-duplicate
+        env:
+          NUGET_API_KEY: ${{ secrets.NUGET_API_KEY }}
