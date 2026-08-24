@@ -1,0 +1,29 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <LangVersion>14.0</LangVersion>
+
+    <PackageId>Plex.Primitives</PackageId>
+    <Version>0.1.0</Version>
+    <Title>Plex.Primitives</Title>
+    <Authors>Musa Divarcı</Authors>
+    <Company>Musa Divarcı</Company>
+    <Description>Small, dependency-free result, error and guard primitives for modern .NET backend applications.</Description>
+    <PackageTags>dotnet csharp result error guard primitives backend clean-architecture</PackageTags>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <PackageProjectUrl>https://github.com/musadivarci/PlexV1</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/musadivarci/PlexV1</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <PublishRepositoryUrl>true</PublishRepositoryUrl>
+    <ContinuousIntegrationBuild>true</ContinuousIntegrationBuild>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <PackageOutputPath>../../artifacts</PackageOutputPath>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="README.md" Pack="true" PackagePath="\" />
+  </ItemGroup>
+</Project>
