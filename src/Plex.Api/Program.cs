@@ -21,6 +21,12 @@ app.MapHealthChecks("/health");
 
 var operations = app.MapGroup("/api/operations");
 
+operations.MapGet("/", async (OperationService service, int? limit, CancellationToken ct) =>
+{
+    var list = await service.ListAsync(limit ?? 50, ct);
+    return Results.Ok(list.Select(ToResponse));
+});
+
 operations.MapPost("/", async (CreateOperationRequest request, OperationService service, CancellationToken ct) =>
 {
     var operation = await service.QueueAsync(request.Name, ct);
