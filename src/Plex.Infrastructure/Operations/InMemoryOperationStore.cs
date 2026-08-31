@@ -22,6 +22,16 @@ public sealed class InMemoryOperationStore : IOperationStore
         return Task.FromResult(operation);
     }
 
+    public Task<IReadOnlyList<Operation>> ListAsync(int take = 50, CancellationToken cancellationToken = default)
+    {
+        var list = _operations.Values
+            .OrderByDescending(o => o.CreatedAt)
+            .Take(Math.Clamp(take, 1, 100))
+            .ToList();
+
+        return Task.FromResult<IReadOnlyList<Operation>>(list);
+    }
+
     public Task SaveAsync(Operation operation, CancellationToken cancellationToken = default)
     {
         _operations[operation.Id] = operation;
