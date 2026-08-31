@@ -90,7 +90,7 @@ My public repositories also include modern TypeScript and AI-oriented work. Plex
 ## Author
 
 **Musa Divarcı**  
-Creator · Project Lead · Software Engineer
+Creator · Project Lead · Software Developer  - MIS
 
 Technical identity represented by this repository:
 
