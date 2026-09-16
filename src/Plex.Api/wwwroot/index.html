@@ -1,0 +1,411 @@
+﻿<!DOCTYPE html>
+<html lang=""en"" class=""dark"">
+<head>
+    <meta charset=""UTF-8"">
+    <meta name=""viewport"" content=""width=device-width, initial-scale=1.0"">
+    <title>Plex | Distributed Operations & Audit Platform</title>
+    <script src=""https://cdn.tailwindcss.com""></script>
+    <script src=""https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/8.0.7/signalr.min.js""></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+                        mono: ['"JetBrains Mono"', 'monospace']
+                    },
+                    colors: {
+                        brand: {
+                            50: '#f0fdf4',
+                            500: '#10b981',
+                            600: '#059669',
+                            700: '#047857'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            background-color: #090d16;
+            color: #e2e8f0;
+        }
+        .glass-card {
+            background: rgba(15, 23, 42, 0.75);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        .glow-emerald {
+            box-shadow: 0 0 25px -5px rgba(16, 185, 129, 0.3);
+        }
+    </style>
+</head>
+<body class="min-h-screen font-sans antialiased flex flex-col selection:bg-emerald-500 selection:text-black">
+    <!-- Navigation / Header -->
+    <header class="border-b border-slate-800/80 glass-card sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+            <div class="flex items-center space-x-3">
+                <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-emerald-500 to-teal-300 flex items-center justify-center font-black text-slate-950 text-xl shadow-lg glow-emerald">
+                    P
+                </div>
+                <div>
+                    <div class="flex items-center space-x-2">
+                        <span class="font-extrabold text-lg tracking-tight text-white">PLEX</span>
+                        <span class="text-xs uppercase px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 font-semibold border border-emerald-500/20">v1.0 .NET 10</span>
+                    </div>
+                    <p class="text-[11px] text-slate-400 font-mono">Distributed Operations & Audit Engine</p>
+                </div>
+            </div>
+
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2 px-3 py-1 rounded-full bg-slate-900 border border-slate-800 text-xs font-mono">
+                    <span id="connection-indicator" class="w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse"></span>
+                    <span id="connection-status" class="text-slate-300">Connecting...</span>
+                </div>
+                <a href="https://github.com/musadivarci/PlexV1" target="_blank" class="hidden sm:flex items-center space-x-2 text-xs text-slate-400 hover:text-white transition px-3 py-1.5 rounded-lg border border-slate-800 bg-slate-900/50 hover:border-slate-700">
+                    <svg class="w-4 h-4 fill-current" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+                    <span>Musa Divarcı</span>
+                </a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Container -->
+    <main class="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 space-y-8">
+        <!-- Hero / Stats Bar -->
+        <div class="grid grid-cols-2 md:grid-cols-4 gap-4">
+            <div class="glass-card rounded-2xl p-4 border border-slate-800">
+                <p class="text-xs font-medium text-slate-400 uppercase tracking-wider">Total Operations</p>
+                <p id="stat-total" class="text-3xl font-bold font-mono mt-1 text-white">0</p>
+            </div>
+            <div class="glass-card rounded-2xl p-4 border border-slate-800">
+                <p class="text-xs font-medium text-amber-400 uppercase tracking-wider">Running</p>
+                <p id="stat-running" class="text-3xl font-bold font-mono mt-1 text-amber-300">0</p>
+            </div>
+            <div class="glass-card rounded-2xl p-4 border border-slate-800">
+                <p class="text-xs font-medium text-emerald-400 uppercase tracking-wider">Succeeded</p>
+                <p id="stat-succeeded" class="text-3xl font-bold font-mono mt-1 text-emerald-300">0</p>
+            </div>
+            <div class="glass-card rounded-2xl p-4 border border-slate-800">
+                <p class="text-xs font-medium text-rose-400 uppercase tracking-wider">Failed</p>
+                <p id="stat-failed" class="text-3xl font-bold font-mono mt-1 text-rose-300">0</p>
+            </div>
+        </div>
+
+        <!-- Action Section: Trigger Operation -->
+        <div class="glass-card rounded-2xl p-6 border border-slate-800/80 shadow-2xl">
+            <h2 class="text-lg font-bold text-white mb-2 flex items-center space-x-2">
+                <svg class="w-5 h-5 text-emerald-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+                <span>Trigger Operational Job</span>
+            </h2>
+            <p class="text-sm text-slate-400 mb-4">Queue an asynchronous operational task and track state transitions with guaranteed auditability.</p>
+            
+            <form id="queue-form" class="flex flex-col sm:flex-row gap-3">
+                <div class="flex-1">
+                    <input type="text" id="op-name-input" placeholder="e.g. nightly-ledger-rebuild, cache-sync, data-reconciliation" class="w-full bg-slate-900 border border-slate-700/80 rounded-xl px-4 py-2.5 text-sm text-white placeholder-slate-500 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 font-mono" required>
+                </div>
+                <div class="flex gap-2">
+                    <button type="submit" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-6 py-2.5 rounded-xl text-sm transition flex items-center justify-center space-x-2 shadow-lg glow-emerald">
+                        <span>Queue Job</span>
+                    </button>
+                    <button type="button" onclick="setPreset('nightly-ledger-rebuild')" class="hidden md:inline-flex bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-xl transition border border-slate-700 items-center">
+                        Ledger Preset
+                    </button>
+                    <button type="button" onclick="setPreset('distributed-cache-purge')" class="hidden md:inline-flex bg-slate-800 hover:bg-slate-700 text-slate-300 text-xs px-3 py-2 rounded-xl transition border border-slate-700 items-center">
+                        Cache Preset
+                    </button>
+                </div>
+            </form>
+        </div>
+
+        <!-- Operations & Live Audit Board -->
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <!-- Operations List (2 cols) -->
+            <div class="lg:col-span-2 space-y-4">
+                <div class="flex items-center justify-between">
+                    <h2 class="text-lg font-bold text-white">Active & Recent Operations</h2>
+                    <button onclick="fetchOperations()" class="text-xs text-slate-400 hover:text-emerald-400 flex items-center space-x-1 font-mono">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                        <span>Refresh</span>
+                    </button>
+                </div>
+
+                <div id="operations-container" class="space-y-3">
+                    <div class="text-center py-12 text-slate-500 text-sm font-mono">Loading operations...</div>
+                </div>
+            </div>
+
+            <!-- Audit Trail Inspector (1 col) -->
+            <div class="space-y-4">
+                <h2 class="text-lg font-bold text-white flex items-center space-x-2">
+                    <svg class="w-5 h-5 text-teal-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+                    <span>Audit Trail Inspector</span>
+                </h2>
+                <div id="audit-inspector" class="glass-card rounded-2xl p-5 border border-slate-800 min-h-[300px] text-xs font-mono">
+                    <p class="text-slate-500 text-center py-8">Select an operation to inspect its immutable audit history.</p>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="border-t border-slate-800/80 py-6 mt-auto">
+        <div class="max-w-7xl mx-auto px-4 text-center text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+            <span>Plex Distributed Operations Engine &copy; 2026. Designed & engineered by <strong>Musa Divarcı</strong>.</span>
+            <div class="flex space-x-4 font-mono">
+                <span>.NET 10 LTS</span>
+                <span>SignalR</span>
+                <span>Clean Architecture</span>
+            </div>
+        </div>
+    </footer>
+
+    <script>
+        let operations = [];
+        let selectedOperationId = null;
+
+        function setPreset(name) {
+            document.getElementById('op-name-input').value = name;
+        }
+
+        function getStatusBadge(status) {
+            switch (status) {
+                case 'Queued':
+                    return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-300 border border-slate-700">Queued</span>';
+                case 'Running':
+                    return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-500/10 text-amber-400 border border-amber-500/30 flex items-center space-x-1.5"><span class="w-2 h-2 rounded-full bg-amber-400 animate-ping"></span><span>Running</span></span>';
+                case 'Succeeded':
+                    return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-500/10 text-emerald-400 border border-emerald-500/30">Succeeded</span>';
+                case 'Failed':
+                    return '<span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-rose-500/10 text-rose-400 border border-rose-500/30">Failed</span>';
+                default:
+                    return <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-slate-800 text-slate-400"></span>;
+            }
+        }
+
+        async function fetchOperations() {
+            try {
+                const res = await fetch('/api/operations?limit=50');
+                if (!res.ok) return;
+                operations = await res.json();
+                renderOperations();
+                updateStats();
+                if (selectedOperationId) {
+                    inspectOperation(selectedOperationId);
+                }
+            } catch (err) {
+                console.error("Failed to fetch operations:", err);
+            }
+        }
+
+        function updateStats() {
+            document.getElementById('stat-total').innerText = operations.length;
+            document.getElementById('stat-running').innerText = operations.filter(o => o.status === 'Running').length;
+            document.getElementById('stat-succeeded').innerText = operations.filter(o => o.status === 'Succeeded').length;
+            document.getElementById('stat-failed').innerText = operations.filter(o => o.status === 'Failed').length;
+        }
+
+        function renderOperations() {
+            const container = document.getElementById('operations-container');
+            if (operations.length === 0) {
+                container.innerHTML = '<div class="glass-card rounded-xl p-8 text-center text-slate-500 text-sm font-mono">No operations queued yet. Trigger one above!</div>';
+                return;
+            }
+
+            container.innerHTML = operations.map(op => {
+                const isSelected = op.id === selectedOperationId;
+                const dateStr = new Date(op.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                
+                let actionsHtml = '';
+                if (op.status === 'Queued') {
+                    actionsHtml = <button onclick="startOp('', event)" class="px-3 py-1 bg-amber-500 hover:bg-amber-400 text-slate-950 font-bold text-xs rounded-lg transition">Start</button>;
+                } else if (op.status === 'Running') {
+                    actionsHtml = 
+                        <button onclick="succeedOp('', event)" class="px-3 py-1 bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold text-xs rounded-lg transition">Succeed</button>
+                        <button onclick="failOp('', event)" class="px-3 py-1 bg-rose-500/20 hover:bg-rose-500 text-rose-300 hover:text-white font-bold text-xs rounded-lg border border-rose-500/30 transition">Fail</button>
+                    ;
+                }
+
+                return 
+                    <div onclick="inspectOperation('')" class="glass-card rounded-xl p-4 border transition cursor-pointer flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 ">
+                        <div class="space-y-1">
+                            <div class="flex items-center space-x-3">
+                                <span class="font-bold text-white text-base tracking-tight"></span>
+                                
+                            </div>
+                            <div class="text-[11px] font-mono text-slate-400 flex items-center space-x-3">
+                                <span>ID: ...</span>
+                                <span>•</span>
+                                <span>Created: </span>
+                            </div>
+                        </div>
+                        <div class="flex items-center space-x-2 self-end sm:self-center">
+                            
+                        </div>
+                    </div>
+                ;
+            }).join('');
+        }
+
+        async function inspectOperation(id) {
+            selectedOperationId = id;
+            renderOperations();
+
+            const inspector = document.getElementById('audit-inspector');
+            inspector.innerHTML = '<div class="text-center py-8 text-slate-400">Loading audit records...</div>';
+
+            try {
+                const res = await fetch(/api/operations/);
+                if (!res.ok) return;
+                const data = await res.json();
+
+                let auditItemsHtml = (data.audit || []).map((audit, idx) => {
+                    const time = new Date(audit.occurredAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+                    return 
+                        <div class="relative pl-6 pb-4 border-l-2 border-slate-700 last:border-0 last:pb-0">
+                            <div class="absolute -left-[5px] top-0 w-2 h-2 rounded-full bg-emerald-400"></div>
+                            <div class="text-slate-300 font-bold text-xs"></div>
+                            <div class="text-slate-400 text-[11px] mt-0.5"></div>
+                            <div class="text-slate-500 text-[10px] mt-1"></div>
+                        </div>
+                    ;
+                }).join('');
+
+                inspector.innerHTML = 
+                    <div class="space-y-4">
+                        <div class="border-b border-slate-800 pb-3">
+                            <div class="font-bold text-white text-sm"></div>
+                            <div class="text-slate-400 text-[11px] font-mono mt-1 break-all"></div>
+                            <div class="mt-2"></div>
+                        </div>
+                        <div>
+                            <div class="text-[11px] uppercase tracking-wider text-slate-400 font-semibold mb-3">Immutable Audit Log</div>
+                            <div class="space-y-1">
+                                
+                            </div>
+                        </div>
+                    </div>
+                ;
+            } catch (err) {
+                console.error("Failed to inspect operation:", err);
+            }
+        }
+
+        async function startOp(id, event) {
+            event.stopPropagation();
+            await fetch(/api/operations//start, { method: 'POST' });
+            await fetchOperations();
+        }
+
+        async function succeedOp(id, event) {
+            event.stopPropagation();
+            await fetch(/api/operations//succeed, { method: 'POST' });
+            await fetchOperations();
+        }
+
+        async function failOp(id, event) {
+            event.stopPropagation();
+            const reason = prompt("Enter failure reason:", "Simulated timeout exception in execution step");
+            if (reason === null) return;
+            await fetch(/api/operations//fail, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ reason: reason || "Unspecified failure" })
+            });
+            await fetchOperations();
+        }
+
+        document.getElementById('queue-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const input = document.getElementById('op-name-input');
+            const name = input.value.trim();
+            if (!name) return;
+
+            try {
+                const res = await fetch('/api/operations', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name })
+                });
+                if (res.ok) {
+                    const created = await res.json();
+                    input.value = '';
+                    await fetchOperations();
+                    inspectOperation(created.id);
+                }
+            } catch (err) {
+                console.error("Failed to queue operation:", err);
+            }
+        });
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return str.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+        }
+
+        // Initialize SignalR Connection
+        function setupSignalR() {
+            const connection = new signalR.HubConnectionBuilder()
+                .withUrl("/hubs/operations")
+                .withAutomaticReconnect([0, 2000, 5000, 10000])
+                .build();
+
+            const indicator = document.getElementById('connection-indicator');
+            const statusLabel = document.getElementById('connection-status');
+
+            connection.on("OperationQueued", (op) => {
+                fetchOperations();
+            });
+
+            connection.on("OperationStarted", (opId, occurredAt) => {
+                fetchOperations();
+            });
+
+            connection.on("OperationSucceeded", (opId, occurredAt) => {
+                fetchOperations();
+            });
+
+            connection.on("OperationFailed", (opId, reason, occurredAt) => {
+                fetchOperations();
+            });
+
+            connection.onreconnecting(() => {
+                indicator.className = 'w-2.5 h-2.5 rounded-full bg-amber-400 animate-pulse';
+                statusLabel.innerText = 'Reconnecting...';
+            });
+
+            connection.onreconnected(() => {
+                indicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+                statusLabel.innerText = 'Live Streaming';
+                fetchOperations();
+            });
+
+            connection.onclose(() => {
+                indicator.className = 'w-2.5 h-2.5 rounded-full bg-rose-500';
+                statusLabel.innerText = 'Disconnected';
+            });
+
+            connection.start()
+                .then(() => {
+                    indicator.className = 'w-2.5 h-2.5 rounded-full bg-emerald-400';
+                    statusLabel.innerText = 'Live Streaming';
+                })
+                .catch(err => {
+                    console.warn("SignalR direct connect failed (fallback to polling):", err);
+                    indicator.className = 'w-2.5 h-2.5 rounded-full bg-blue-400';
+                    statusLabel.innerText = 'Polling Active';
+                });
+        }
+
+        // Boot
+        fetchOperations();
+        setupSignalR();
+        setInterval(fetchOperations, 10000);
+    </script>
+</body>
+</html>
