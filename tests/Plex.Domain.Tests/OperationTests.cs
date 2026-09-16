@@ -104,4 +104,34 @@ public class OperationTests
         // Act & Assert
         Assert.Throws<InvalidOperationException>(() => operation.Start(DateTimeOffset.UtcNow));
     }
+
+    [Fact]
+    public void OperationLifecycle_ShouldPublishCorrespondingDomainEvents()
+    {
+        // Arrange
+        var created = DateTimeOffset.UtcNow;
+        var started = created.AddSeconds(1);
+        var completed = created.AddSeconds(5);
+
+        // Act: Queue
+        var operation = Operation.Queue("invoice-batch", created);
+        Assert.Single(operation.DomainEvents);
+        var queuedEvent = Assert.IsType<OperationQueuedDomainEvent>(operation.DomainEvents.First());
+        Assert.Equal(operation.Id, queuedEvent.OperationId);
+        Assert.Equal("invoice-batch", queuedEvent.Name);
+
+        // Act: Start
+        operation.Start(started);
+        Assert.Equal(2, operation.DomainEvents.Count);
+        Assert.IsType<OperationStartedDomainEvent>(operation.DomainEvents.Last());
+
+        // Act: Succeed
+        operation.Succeed(completed);
+        Assert.Equal(3, operation.DomainEvents.Count);
+        Assert.IsType<OperationSucceededDomainEvent>(operation.DomainEvents.Last());
+
+        // Act: Clear events
+        operation.ClearDomainEvents();
+        Assert.Empty(operation.DomainEvents);
+    }
 }

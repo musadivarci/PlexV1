@@ -10,12 +10,18 @@ public interface IOperationStore
     Task SaveAsync(Operation operation, CancellationToken cancellationToken = default);
 }
 
-public sealed class OperationService(IOperationStore store, TimeProvider timeProvider)
+public sealed class OperationService(
+    IOperationStore store,
+    TimeProvider timeProvider,
+    IOperationEventPublisher? eventPublisher = null)
 {
+    private readonly IOperationEventPublisher _publisher = eventPublisher ?? NullOperationEventPublisher.Instance;
+
     public async Task<Operation> QueueAsync(string name, CancellationToken cancellationToken = default)
     {
         var operation = Operation.Queue(name, timeProvider.GetUtcNow());
         await store.AddAsync(operation, cancellationToken);
+        await DispatchEventsAsync(operation, cancellationToken);
         return operation;
     }
 
@@ -24,6 +30,7 @@ public sealed class OperationService(IOperationStore store, TimeProvider timePro
         var operation = await Required(id, cancellationToken);
         operation.Start(timeProvider.GetUtcNow());
         await store.SaveAsync(operation, cancellationToken);
+        await DispatchEventsAsync(operation, cancellationToken);
         return operation;
     }
 
@@ -32,6 +39,7 @@ public sealed class OperationService(IOperationStore store, TimeProvider timePro
         var operation = await Required(id, cancellationToken);
         operation.Succeed(timeProvider.GetUtcNow());
         await store.SaveAsync(operation, cancellationToken);
+        await DispatchEventsAsync(operation, cancellationToken);
         return operation;
     }
 
@@ -40,6 +48,7 @@ public sealed class OperationService(IOperationStore store, TimeProvider timePro
         var operation = await Required(id, cancellationToken);
         operation.Fail(reason, timeProvider.GetUtcNow());
         await store.SaveAsync(operation, cancellationToken);
+        await DispatchEventsAsync(operation, cancellationToken);
         return operation;
     }
 
@@ -48,6 +57,15 @@ public sealed class OperationService(IOperationStore store, TimeProvider timePro
 
     public Task<IReadOnlyList<Operation>> ListAsync(int take = 50, CancellationToken cancellationToken = default) =>
         store.ListAsync(take, cancellationToken);
+
+    private async Task DispatchEventsAsync(Operation operation, CancellationToken cancellationToken)
+    {
+        foreach (var @event in operation.DomainEvents)
+        {
+            await _publisher.PublishAsync(@event, cancellationToken);
+        }
+        operation.ClearDomainEvents();
+    }
 
     private async Task<Operation> Required(Guid id, CancellationToken cancellationToken) =>
         await store.GetAsync(id, cancellationToken)
