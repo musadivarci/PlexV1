@@ -1,0 +1,14 @@
+<Solution>
+  <Folder Name="/src/">
+    <Project Path="src/Plex.Api/Plex.Api.csproj" />
+    <Project Path="src/Plex.Application/Plex.Application.csproj" />
+    <Project Path="src/Plex.Domain/Plex.Domain.csproj" />
+    <Project Path="src/Plex.Infrastructure/Plex.Infrastructure.csproj" />
+    <Project Path="src/Plex.Primitives/Plex.Primitives.csproj" />
+    <Project Path="src/Plex.Worker/Plex.Worker.csproj" />
+  </Folder>
+  <Folder Name="/tests/">
+    <Project Path="tests/Plex.Domain.Tests/Plex.Domain.Tests.csproj" />
+    <Project Path="tests/Plex.Primitives.Tests/Plex.Primitives.Tests.csproj" />
+  </Folder>
+</Solution>
