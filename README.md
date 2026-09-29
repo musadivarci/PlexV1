@@ -159,7 +159,9 @@ GET /api/operations/{id}
 **Musa Divarcı**  
 *Creator & Lead Engineer · Management Information Systems (MIS)*  
 
+[![Website](https://img.shields.io/badge/Website-musadivarci.com.tr-0078D4?style=flat&logo=google-chrome&logoColor=white)](https://www.musadivarci.com.tr/)
 [![GitHub](https://img.shields.io/badge/GitHub-musadivarci-181717?style=flat&logo=github)](https://github.com/musadivarci)
+[![LinkedIn](https://img.shields.io/badge/LinkedIn-Musa_Divarc%C4%B1-0A66C2?style=flat&logo=linkedin&logoColor=white)](https://www.linkedin.com/in/musa-divarci-9280515a)
 
 Specializing in **C# / .NET 10**, **Distributed Systems**, **Clean Architecture**, **Enterprise Integration**, and **Modern Full-Stack Applications**.
 
